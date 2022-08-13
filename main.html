@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+		</style>
+		<!-- <script src="../node_modules/three/build/three.js"></script> -->
+	</head>
+	<body>
+		<script type="importmap">
+			{
+			  "imports": {
+				"three": "./node_modules/three/build/three.module.js"
+			  }
+			}
+		</script>
+		<script type="module" > 
+
+			import * as THREE from 'three';
+			import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
+			import {GLTFLoader} from './node_modules/three/examples/jsm/loaders/GLTFLoader.js'
+			import {RGBELoader} from './node_modules/three/examples/jsm/loaders/RGBELoader.js'
+			import { DRACOLoader } from './node_modules/three/examples/jsm/loaders/DRACOLoader.js';
+			import { RoomEnvironment } from './node_modules/three/examples/jsm/environments/RoomEnvironment.js';
+			
+			let mixer;
+			const clock = new THREE.Clock();
+			const scene = new THREE.Scene();
+			const color2 = new THREE.Color( 0x3c3c3c );
+			scene.background = color2;
+			new RGBELoader()
+					
+					.load( './light/solitude_interior_1k.hdr', function ( texture ) {
+
+						texture.mapping = THREE.EquirectangularReflectionMapping;
+
+						// scene.background = texture;
+						scene.environment = texture;
+
+						//animate();
+
+						// model
+
+						const loader = new GLTFLoader();
+						const dracoLoader = new DRACOLoader();
+						dracoLoader.setDecoderPath( 'node_modules/three/examples/js/libs/draco/gltf/' );
+						loader.setDRACOLoader( dracoLoader );
+						loader.load( './model/h_pattern_shifter_anim_final.gltf', function ( gltf ) {
+						
+							gltf.scene.traverse( function( node ) {
+								if ( node.isMesh ) { 
+									node.castShadow = true;
+									node.receiveShadow = true;
+								 }
+								} );
+							const model = gltf.scene;
+							model.position.set( 0, -0.1, 0 );
+							model.scale.set( 1, 1, 1 );
+							model.rotation.set(0,0,0);
+							// model.receiveShadow = true;
+							// model.castShadow = true;
+							scene.add( model );
+
+							mixer = new THREE.AnimationMixer( model );
+							mixer.clipAction( gltf.animations[ 0 ] ).play();
+
+							animate();
+						}, undefined, 
+						function ( error ) {
+							console.error( error );
+						} );
+
+					} );
+
+			const renderer = new THREE.WebGLRenderer( {antialias:true} );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.toneMapping = THREE.ACESFilmicToneMapping;
+			renderer.toneMappingExposure = 1;
+			renderer.outputEncoding = THREE.sRGBEncoding;
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			
+			document.body.appendChild( renderer.domElement ); 
+			const camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight,0.01, 0.5 ); 
+			const controls = new OrbitControls( camera, renderer.domElement );
+			controls.enablePan = false;
+			//controls.enableZoom = false;
+			controls.minDistance=0.1;
+			controls.maxDistance=0.4;
+			controls.update();
+			camera.position.set( 0.4, 0.4, 0.4 ); camera.lookAt( 0, 0, 0 ); 
+			
+			const geometry = new THREE.PlaneGeometry( 200, 200 );
+			const material = new THREE.MeshPhongMaterial({
+					color: 0xFFFFFF,
+					wireframe: false
+				});
+
+			function animate() {
+				requestAnimationFrame( animate );
+				controls.update();
+				renderer.render( scene, camera );
+				const delta = clock.getDelta();
+				mixer.update( delta );
+			}
+			//animate();	
+		</script>
+
+	</body>
+</html>
