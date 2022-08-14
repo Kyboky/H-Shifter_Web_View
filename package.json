@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "deploy": "^1.0.3",
     "gh-pages": "^4.0.0",
     "three": "^0.143.0"
   },
