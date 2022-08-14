@@ -12,18 +12,18 @@
 		<script type="importmap">
 			{
 			  "imports": {
-				"three": "./node_modules/three/build/three.module.js"
+				"three": "./modules/build/three.module.js"
 			  }
 			}
 		</script>
 		<script type="module" > 
 
 			import * as THREE from 'three';
-			import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
-			import {GLTFLoader} from './node_modules/three/examples/jsm/loaders/GLTFLoader.js'
-			import {RGBELoader} from './node_modules/three/examples/jsm/loaders/RGBELoader.js'
-			import { DRACOLoader } from './node_modules/three/examples/jsm/loaders/DRACOLoader.js';
-			import { RoomEnvironment } from './node_modules/three/examples/jsm/environments/RoomEnvironment.js';
+			import { OrbitControls } from './modules/controls/OrbitControls.js';
+			import {GLTFLoader} from './modules/loaders/GLTFLoader.js'
+			import {RGBELoader} from './modules/loaders/RGBELoader.js'
+			import { DRACOLoader } from './modules/loaders/DRACOLoader.js';
+			import { RoomEnvironment } from './modules/environments/RoomEnvironment.js';
 			
 			let mixer;
 			const clock = new THREE.Clock();
