@@ -2,13 +2,19 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>My first three.js app</title>
+		<title>H-pattern shifter</title>
 		<style>
 			body { margin: 0; }
 		</style>
-		<!-- <script src="../node_modules/three/build/three.js"></script> -->
 	</head>
 	<body>
+		<div style="padding: 10px; margin-right: 20px ;width: 220px; position:absolute; top:500px; right:0px; background-color: rgb(43, 43, 43); color: rgb(200, 200, 200); font-size: 12px;">
+			<h2 style="margin-top: 10px;">Description</h2> 
+			<p id="description"> This is an animation of assembly process</p> 
+			<div id="BOM_table">
+
+			</div>
+		</div>
 		<script type="importmap">
 			{
 			  "imports": {
@@ -30,12 +36,15 @@
 			let currentDuration = 0, finishTime, startTime, lastAnimDuration;
 			let mixer;
 			let modelGlobal;
+			const descriptionField = document.getElementById("description");
+			const BOMTable = document.getElementById("BOM_table");
 			const clock = new THREE.Clock();
 			const scene = new THREE.Scene();
 			const color2 = new THREE.Color( 0x151C24 );
 			scene.background = color2;
+			window.addEventListener( 'resize', onWindowResize );
+
 			new RGBELoader()
-					
 					.load( './light/solitude_interior_1k.hdr', function ( texture ) {
 
 						texture.mapping = THREE.EquirectangularReflectionMapping;
@@ -43,15 +52,11 @@
 						// scene.background = texture;
 						scene.environment = texture;
 
-						//animate();
-
-						// model
-
 						const loader = new GLTFLoader();
 						const dracoLoader = new DRACOLoader();
 						dracoLoader.setDecoderPath( 'node_modules/three/examples/js/libs/draco/gltf/' );
 						loader.setDRACOLoader( dracoLoader );
-						loader.load( './model/h_pattern_shifter_anim_final.gltf', function ( gltf ) {
+						loader.load( './model/h_pattern_shifter_anim_final_with_clamp.gltf', function ( gltf ) {
 							modelGlobal = gltf;
 							gltf.scene.traverse( function( node ) {
 								if ( node.isMesh ) { 
@@ -63,8 +68,6 @@
 							model.position.set( 0, -0.1, 0 );
 							model.scale.set( 1, 1, 1 );
 							model.rotation.set(0,0,0);
-							// model.receiveShadow = true;
-							// model.castShadow = true;
 							scene.add( model );
 
 							mixer = new THREE.AnimationMixer( model );
@@ -87,8 +90,14 @@
 			renderer.shadowMap.enabled = true;
 			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 			const gui = new GUI();
+			
 			const effectController = {
 				animSpeed: 4,
+				loop: true,
+				isAnimFinished: false,
+				playInLoop: function(){
+
+				},
 				play: function(){
 					this.animSpeed = 2;
 				},
@@ -96,76 +105,93 @@
 					this.animSpeed = 0;
 				},
 				fullanim: function(){
-					console.log('step1');
-					updateAnim(0.1, 22.5, effectController['animSpeed'] )
+					updateAnim(0.1, 25.5, effectController['animSpeed'] );
+					descriptionField.innerHTML = "This is the full assembly process of a shifter.";
+					generateTable([["Central_Outer_Interface_Cap",1],["Central_Outer_Interface",1],["Central_Part",1],["Clamp_Adapter",1],["Distance_Cilinder_Short",1],["Distance_Cilinder",1],["H_Shifter_Plate",1],["Rubber_Band_Handle",2],["Shifter_Base_Bearing_holder",2],["Shifter_Base",1],["Shifter_Knob",1],["Vertical_Movement_Stopper",1],["Mounting clamp",1],["DIN 912 M2x16",4],["DIN 912 M3x8",2],["DIN 912 M3x12",12],["DIN 912 M3x16",4],["DIN 912 M4x16",2],["DIN 912 M4x20",4],["DIN 7991 M3x16",4],["DIN 562 M3",22],["DIN 562 M8",1],["DIN 934 M2",4],["DIN 934 M4",4],["DIN 6923 M8",4],["DIN 976 M8","150mm+"],["608-2RS",5],["Microswitch",8]]);
 				},
 				step1: function(){
-					console.log('step1');
-					updateAnim(0.1, 1.8, effectController['animSpeed'] )
+					updateAnim(0.1, 1.8, effectController['animSpeed'] );
+					descriptionField.innerHTML = "Tighten the screws until bearings cannot be easily pulled away from the shaft.";
+					generateTable([["Central_Part",1],["DIN 7991 M3x16",2],["DIN 562 M3",2],["608-2RS",2]]);
 				},
 				step2: function(){
-					console.log('step2');
-					updateAnim(1.9, 2.1, effectController['animSpeed'] )
+					updateAnim(1.9, 2.05, effectController['animSpeed'] );
+					descriptionField.innerHTML = "Tighten the nuts around Central_Part so there is 50 mm of threaded rod under the Central_Part. The length of threaded rod should be at least 150 mm.";
+					generateTable([["DIN 976 M8","150+ mm"], ["DIN 6923 M8",2]])
 				},
 				step3: function(){
-					console.log('step3');
-					updateAnim(4, 4.6, effectController['animSpeed'] )
+					updateAnim(4, 4.6, effectController['animSpeed'] );
+					descriptionField.innerHTML = "Like in the <i>step1</i>, tighten the screws until bearings cannot be easily pulled away from the shaft. Do not forget to put 4 square nuts into the <b>Central_Outer_Interface_Cap</b> before screwing it onto the <b>Central_Outer_Interface</b> because the bearing is in the way to place them later.";
+					generateTable([["Central_Outer_Interface",1],["Central_Outer_Interface_Cap",1],["DIN 7991 M3x16",2],["DIN 562 M3",10],["608-2RS",2],["DIN 912 M3x12",4]])
 				},
 				step4: function(){
-					console.log('step4');
-					updateAnim(8.6, 2.7, effectController['animSpeed'] )
+					updateAnim(8.6, 2.7, effectController['animSpeed'] );
+					descriptionField.innerHTML = "NOTE: The M8 nut can come loose from using the shifter. Make sure it stays tight.";
+					generateTable([["Distance_Cilinder",1],["Distance_Cilinder_Short",1],["DIN 6923 M8",1],["608-2RS",1],["DIN 912 M3x12",4]])
 				},
 				step5: function(){
-					console.log('step5');
-					updateAnim(11.4, 2.25, effectController['animSpeed'] )
+					updateAnim(11.4, 2.25, effectController['animSpeed'] );
+					descriptionField.innerHTML = "When placing the <b>Shifter_Base_Bearing_holder</b> push it into the bearing with the small wall leaning to the bearing outer ring side.";
+					generateTable([["Shifter_Base",1],["Shifter_Base_Bearing_holder",2],["DIN 562 M3",4],["DIN 912 M3x12",4]])
 				},
 				step6: function(){
-					console.log('step6');
-					updateAnim(13.65, 1.3, effectController['animSpeed'] )
+					updateAnim(13.65, 1.3, effectController['animSpeed'] );
+					descriptionField.innerHTML = "Push the <b>Rubber_Band_Handle</b> to the base wall so it leans on it and then tighten the screws.";
+					generateTable([["Rubber_Band_Handle",2],["DIN 562 M3",2],["DIN 912 M3x8",2]])
 				},
 				step7: function(){
-					console.log('step7');
-					updateAnim(14.95, 1.7, effectController['animSpeed'] )
+					updateAnim(14.95, 1.7, effectController['animSpeed'] );
+					descriptionField.innerHTML = "This part is little bit finicky and requires a bit of adjusting. The microswitches are tightened with one screw. Therefore, there is no exact position for them. After screwing the microswitches to	<b>H_Shifter_Plate</b> you can place the whole assembly onto the base and try to activate the microswitches with the threaded rod (there is a distinct click of a microswitch when it is activated). Do not overtighten the screw because there is a possibility of destroying the microswitch.";
+					generateTable([["H_Shifter_Plate",1],["Microswitch",8],["DIN 912 M2x16",4],["DIN 934 M2",4]])
 				},
 				step8: function(){
-					console.log('step8');
-					updateAnim(16.7, 0.62, effectController['animSpeed'] )
+					updateAnim(16.7, 0.62, effectController['animSpeed'] );
+					descriptionField.innerHTML = "In this step the wires are soldered to the microswitches. The wires need to be soldered to the NO (normally opened) terminal and C/COM (common) terminal. One of the terminals, in this case NO, has to be connected to GND (ground) on the Raspberry Pi Pico. The other terminal of the microswitches, in this case C/COM, has to be connected to the GPIO (general-purpose input/output) on Raspberry Pi Pico (GPIO1-GPIO8 in my case). The GND can be interconnected between microswitches but every microswitch needs a wire for GPIO."
+					generateTable([]);
 				},
 				step9: function(){
-					console.log('step9');
-					updateAnim(17.4, 1.9, effectController['animSpeed'] )
+					updateAnim(17.4, 1.9, effectController['animSpeed'] );
+					descriptionField.innerHTML = "Connect the <b>H_Shifter_Plate</b> with all the microswitches and the wires to the <b>Shifter_Base</b>.";
+					generateTable([["DIN 562 M3",4],["DIN 912 M3x12",4]]);
 				},
 				step10: function(){
-					console.log('step10');
-					updateAnim(19.3, 2.65, effectController['animSpeed'] )
+					updateAnim(19.3, 2.65, effectController['animSpeed'] );
+					descriptionField.innerHTML = "Screw the M8 nut under the final position of knob then put the square nut inside the knob and screw it to shaft into the wanted position. Finally, unscrew the M8 nut until it is tightly placed to the knob.";
+					generateTable([["Shifter_Knob",1],["DIN 562 M8",1],["DIN 6923 M8",1]]);
 				},
 				step11: function(){
-					console.log('step11');
-					updateAnim(22, 0.6, effectController['animSpeed'] )
+					updateAnim(22, 0.6, effectController['animSpeed'] );
+					descriptionField.innerHTML = "Place two kitchen rubber bands so the shifter is being pulled to the center position.";
+					generateTable([["Rubber Band",2]]);
+				},
+				step12: function(){
+					updateAnim(23, 2.6, effectController['animSpeed'] );
+					descriptionField.innerHTML = "Screw the <b>Mounting clamp</b> to the <b>Clamp_Adapter</b> and then connect the whole thing to the shifter with M4x20 screws and nuts.";
+					generateTable([["Mounting clamp",1],["Clamp_Adapter",1],["DIN 912 M4x16",2],["DIN 912 M4x20",4],["DIN 934 M4",4]]);
 				}
 			};
 
 			var animControls = gui.addFolder('Animation controlls');
 			animControls.add( effectController, 'animSpeed', 1, 4, 0.5 ).listen();
-			animControls.add( effectController, 'play')
-			animControls.add( effectController, 'pause')
-			
+			animControls.add( effectController, 'play');
+			animControls.add( effectController, 'pause');
+			animControls.add( effectController, 'loop');
+
 			var assembly = gui.addFolder('Assembly step');
 			assembly.add( effectController, 'fullanim')
-			assembly.add(effectController,'step1');
-			assembly.add(effectController,'step2');
-			assembly.add(effectController,'step3');
-			assembly.add(effectController,'step4');
-			assembly.add(effectController,'step5');
-			assembly.add(effectController,'step6');
-			assembly.add(effectController,'step7');
-			assembly.add(effectController,'step8');
-			assembly.add(effectController,'step9');
-			assembly.add(effectController,'step10');
-			assembly.add(effectController,'step11');
-
-
-			window.addEventListener( 'resize', onWindowResize );
+			assembly.add( effectController, 'step1');
+			assembly.add( effectController, 'step2');
+			assembly.add( effectController, 'step3');
+			assembly.add( effectController, 'step4');
+			assembly.add( effectController, 'step5');
+			assembly.add( effectController, 'step6');
+			assembly.add( effectController, 'step7');
+			assembly.add( effectController, 'step8');
+			assembly.add( effectController, 'step9');
+			assembly.add( effectController, 'step10');
+			assembly.add( effectController, 'step11');
+			assembly.add( effectController, 'step12');
+			
 			
 			document.body.appendChild( renderer.domElement ); 
 			const camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight,0.01, 0.65 ); 
@@ -176,26 +202,18 @@
 			controls.maxDistance=0.4;
 			controls.update();
 			camera.position.set( 0.4, 0.4, 0.4 ); camera.lookAt( 0, 0, 0 ); 
-			
-			const geometry = new THREE.PlaneGeometry( 200, 200 );
-			const material = new THREE.MeshPhongMaterial({
-					color: 0xFFFFFF,
-					wireframe: false
-				});
-				function onWindowResize() {
+			effectController.fullanim();
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
 
-					camera.aspect = window.innerWidth / window.innerHeight;
-					camera.updateProjectionMatrix();
-
-					renderer.setSize( window.innerWidth, window.innerHeight );
-
-					}			
 			function updateScreen() {
 				requestAnimationFrame( updateScreen );
 				controls.update();
 				renderer.render( scene, camera );
-				animate();
-				
+				animate();	
 			}
 
 			function updateAnim(beginTime, animDuration, multiplier = 1){
@@ -207,15 +225,41 @@
 
 			function animate() {
 				const delta = clock.getDelta();
-				currentDuration = currentDuration + delta /4 * effectController['animSpeed'];
-				mixer.setTime( currentDuration);
-				console.log(currentDuration);
-				if(currentDuration > finishTime){
-					updateAnim(startTime, lastAnimDuration);
-				}
+				var deltaTime = delta /4 * effectController['animSpeed'];
+				currentDuration = currentDuration + deltaTime;
 				//console.log(currentDuration);
+				if(currentDuration > finishTime){
+					if(!effectController['loop']){
+						effectController.pause();
+						mixer.setTime( currentDuration - deltaTime);
+						effectController['isAnimFinished'] = true;
+					}
+					else{
+						if (effectController['animSpeed'] == 0) effectController.play();;
+						mixer.setTime( currentDuration);
+						updateAnim(startTime, lastAnimDuration);
+						effectController['isAnimFinished'] = false;
+					}	
+					
+				} 
+				else {
+					if (!effectController['isAnimFinished']) mixer.setTime( currentDuration);
+				}
 			}
-			//animate();	
+
+			function generateTable(parts){
+				if (parts.length == 0) {
+					BOMTable.innerHTML = "";
+					return;
+				}
+				let tableString = '<h3 style="margin-bottom:5px">BOM</h3><table><tr><th style="width:90%">PARTS</th><th>PCS</th></tr>';
+				parts.forEach(part => {
+					tableString = tableString + '<tr><td>'+part[0]+'</td><td>'+part[1]+'</td></tr>';
+				});
+				tableString = tableString + "</table>";
+				BOMTable.innerHTML = tableString;
+			}
+	
 		</script>
 
 	</body>
